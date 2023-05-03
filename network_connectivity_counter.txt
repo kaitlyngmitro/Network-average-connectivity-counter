@@ -1,0 +1,278 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+###########################################################\
+#network_connectivity_counter \
+#\
+#Purpose: The purpose of this code is to compare the average connectivity of a target gene list in a defined edge-file. In this experiment, the target gene list is a list of genes associated with autism and the edge-file a subnetwork of the genes in the human brain. The average connectivity is then compared to the average connectivity of the same number of genes, but these are randomly selected from the human genome and compared to the edge-file. The comparison is then calculated into a numerical p-value to be compared to the p-value standard of 0.01 for determination if the target genes have a high average connectivity, on average, within the brain subnetwork than random genes. \
+#\
+#Author: Kaitlyn Gmitro <kgmitro@g.clemson.edu>\
+#\
+#First write: 01/20/2022 \
+#\
+#Last visit: 11/14/2022\
+#\
+#This software is protected under the GPU version 3 license \
+###########################################################\
+\
+\
+#import libraries \
+import random \
+import sys \
+import numpy \
+import math\
+\
+#user defined variables \
+genefile = sys.argv[1] #all genes in genome \
+edgefile = sys.argv[2] #brain network file \
+target_list_file = sys.argv[3] #genes of interest \
+num_runs = 100 #number of times the analysis will occur\
+delim = ','\
+\
+#functions\
+def randomgeneselector(genefile): \
+    #open master list of all genes, randomly select determined number\
+    #change list name from lines to soemthing else like backgroundgenes then networkfile or edgelist \
+    with open(genefile) as f:\
+        lines = random.sample(f.readlines(),randomgenes)\
+        converted_list=[]\
+    #remove "\\n", new line spacing, and everything after "."\
+    for element in lines: \
+        converted_list.append(element.strip())\
+    for i in converted_list: \
+        split_lines = i.split(".")\
+        return(split_lines[0])\
+\
+#load kinc network and parse edgelist \
+#open(edgefile)\
+#for each line, split at space \
+#combine elements 1 and 2, separated by comma\
+def splitedges(edgefile): \
+    edgelist = []\
+    with open(edgefile, 'r') as fp:\
+        for line in fp:\
+        #split at space \
+            data = line.split() \
+        #print first and second element of lists\
+            s = delim.join(item for item in data[0:2])\
+        #append elements 1,2 to a new array \
+            edgelist.append(s)\
+    return(edgelist)\
+#    print(edgelist)                # Skip initial comments that starts with #\
+    \
+#for each random gene, search each element in edge array for match \
+#count number of matches that occur\
+def countnodes(se): \
+    nodes = []\
+    for i in randomarray: \
+        counter = 0 \
+        for k in edgelist: \
+            if i in k:\
+                counter += 1 \
+        nodes.append(counter) \
+    return(nodes)\
+    #take the average of this output \
+    \
+def avgconnectrandom(cn):\
+    total = numpy.sum(cn)\
+    finalconnect = (total)/randomgenes\
+    random_edge_number = total/2\
+    return(finalconnect)\
+    return(random_edge_number)\
+    \
+#for each gene in target file, search each element in edge array for match and count matches\
+targetnodes = []\
+def counttargetnodes(targetarray): \
+    for i in targetarray: \
+        counter = 0 \
+        for k in edgelist: \
+            if i in k:\
+                counter += 1 \
+        targetnodes.append(counter)\
+    return(targetnodes)\
+    \
+#take the overall average of the average connectivity of target genes \
+def avgconnecttarget(ct):\
+    total_t = numpy.sum(targetnodes)\
+    connectivity = (total_t)/len(targetarray)\
+    target_edge_number = total_t/2\
+    return(target_edge_number)\
+    return(connectivity)\
+    \
+#main code \
+    \
+#load array with list of target genes \
+targetarray = []\
+with open(target_list_file) as tlf: \
+    for line in tlf: \
+        targetarray.append(line.strip())\
+randomgenes = len(targetarray) #number of random genes based on varible length of target gene array \
+    \
+#formating edgelist \
+edgelist = splitedges(edgefile)\
+edgelist.pop(0)\
+\
+#formating edgefile\
+se = splitedges(edgefile)\
+\
+# calculating the average connectivity for a number of random genes (num_runs) number of times \
+genefile_comp = []\
+for x in range(num_runs): \
+    randomarray = [] \
+    for i in range(randomgenes):\
+        randomgene = randomgeneselector(genefile)\
+        randomarray.append(randomgene)\
+    cn = countnodes(se)\
+    avgran = avgconnectrandom(cn)\
+    #if (avgran>100):\
+        #print("%0.3f" % avgran)\
+    #else:\
+        #print("%0.4f" % avgran)\
+    genefile_comp.append(avgran)\
+  \
+#average connectivity of target nodes in network edgefile \
+ct = counttargetnodes(targetarray)\
+observed_connectivity = avgconnecttarget(ct) \
+\
+edgefile_node_count = countnodes(se)\
+#calling functions \
+#avgconnectrandom(cn)\
+\
+\
+#for loop saying for each number in genefile_comp, see if it is greater than the cooresponding randomly selected genes\
+#when compared to the target array\
+#goet = number of counts in random greater or equal to observed connectivity \
+#calculating the numerator for the p-value calculation \
+goet = []\
+for x in genefile_comp:\
+    counter = 0 \
+    if x >= observed_connectivity: \
+        counter += 1 \
+    else: \
+        counter += 0 \
+    goet.append(counter)\
+    \
+\
+#for loop saying for each number in genefile_comp, see if it is lesser than the cooresponding randomly selected genes \
+#when compared to the target array\
+#goet2 = number of counts in random greater or equal to observed connectivity \
+#calculating numberator of lesser pvalue \
+goet2 = []\
+for x in genefile_comp:\
+	counter = 0 \
+	if x <= observed_connectivity:\
+		counter += 1\
+	else: \
+		counter += 0 \
+	goet2.append(counter)\
+\
+#calculating the p-values\
+pvalue_greater = (numpy.sum(goet))/num_runs\
+pvalue_lesser = (numpy.sum(goet2))/num_runs\
+            \
+\
+#nodes_g = number of counts in random greater than ASD genes in nodes  \
+#calculating numberator of greater pvalue \
+observed_nodes = numpy.sum(ct)\
+\
+nodes_g = []\
+for k in edgefile_node_count:\
+	if k > observed_nodes:\
+		counter = 1 \
+	else: \
+		counter = 0 \
+	nodes_g.append(counter) \
+\
+#nodes_l = number of counts in random lesser than ASD genes in nodes  \
+#calculating numerator of lesser pvalue \
+nodes_l = []\
+for k in edgefile_node_count: \
+        if k < observed_nodes:\
+                counter = 1  \
+        else:  \
+                counter = 0  \
+        nodes_l.append(counter) \
+\
+#calculating pvalues of node count\
+g_pvalue_nodes = (numpy.sum(nodes_g))/num_runs\
+l_pvalue_nodes = (numpy.sum(nodes_l))/num_runs\
+\
+#edge count array:\
+ct_edges = []\
+for count in ct:\
+	edge_num = count/2\
+	ct_edges.append(edge_num)\
+\
+sum_ct_edges = numpy.sum(ct_edges)\
+\
+random_edges_array = countnodes(se)\
+\
+#pvalue for edges:\
+edges_g = []\
+cou = 0\
+for g in random_edges_array:\
+	if g > sum_ct_edges:\
+		cou = 1\
+	else:\
+		cou = 0\
+	edges_g.append(cou)\
+\
+edges_g_pvalue = (numpy.sum(edges_g))/num_runs\
+\
+edges_l = []\
+for l in random_edges_array:\
+	if l < sum_ct_edges:\
+		cou = 1\
+	else:\
+		cou = 0 \
+	edges_l.append(cou)\
+\
+edges_l_pvalue = (numpy.sum(edges_l))/num_runs\
+\
+sum_array = [] #array for numerator of square root of standard deviation \
+for i in ct: \
+    subtraction = i - numpy.sum(edgefile_node_count)\
+  \
+    subraction_squared = subtraction**2\
+    \
+    sum_stdev = numpy.sum(subraction_squared)\
+    sum_array.append(sum_stdev)\
+\
+#ct is the array of ASD nodes\
+#edgefile_node_count is number of nodes in edge count\
+#num_runs is sum of all samples = number of times it ran\
+#seeing standard deviation of nodes in ct compared to edgefile_node_count \
+\
+standard_deviation = math.sqrt((numpy.sum(sum_array)) / num_runs)\
+\
+converted_randomgenes = str(randomgenes)\
+converted_lenedgelist = str(len(edgelist))\
+converted_lentargetnodes = str(len(targetnodes))\
+converted_cn = str(sum(countnodes(se))) #counting nodes that random genes hit on \
+converted_avgran = str(avgran)\
+converted_observedconnectivity = str(observed_connectivity)\
+converted_pvalue2 = str(pvalue_greater)\
+converted_pvalue1 = str(pvalue_lesser)\
+converted_stdev = str(standard_deviation)\
+rounded_converted_stdev = "\{:.2f\}".format(float(converted_stdev))\
+\
+#creating data output\
+\
+random_edge_count = (sum(countnodes(se)))/2\
+\
+observed_edge_count = (numpy.sum(ct))/2\
+\
+#headers\
+print('brain_network_name' + delim + 'ASD_gene_file_name' + delim + 'number_of_ASD_associated_genes' + delim + 'brain_network_edge_count' + delim + 'randomgenes_averagenumber_edges_in_brain_network' + delim + 'ASDgenes_averagenumber_edges_in_brain_network' + delim + 'edge_pvalue_greater' + delim + 'edge_pvalue_lesser' + delim + 'randomgenes_node_count_in_brain_network' + delim + 'ASDgenes_node_count_in_brain_network' + delim + 'nodecount_pvalue_lesser' + delim + 'nodecount_pvalue_greater' + delim + 'randomgenes_brain_network_avgconnectivity' + delim + 'ASDgenes_brain_network_avgconnectivity' + delim + 'pvalue_lesser' + delim + 'pvalue_greater' + delim + 'standard_deviation')\
+\
+#data output\
+print(edgefile + delim + target_list_file + delim + str(randomgenes) + delim + str(len(edgelist)) + delim + str(random_edge_count) + delim + str(observed_edge_count) + delim + str(edges_g_pvalue) + delim + str(edges_l_pvalue) + delim + str(converted_cn) + delim + str(numpy.sum(ct)) + delim + str(l_pvalue_nodes) + delim + str(g_pvalue_nodes) + delim + "\{:.2f\}".format(float(converted_avgran)) + delim + "\{:.2f\}".format(float(converted_observedconnectivity)) + delim + converted_pvalue1 + delim + converted_pvalue2 + delim + rounded_converted_stdev)\
+\
+\
+\
+}
